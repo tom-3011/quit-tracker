@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smoke-Free — Quit Tracker 🎉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #FF6FA5;
+    --bg2: #7C6CF6;
+    --bg3: #4ECBF9;
+    --card: #FFFDF7;
+    --ink: #2E2245;
+    --muted: #8177A0;
+    --pink: #FF3D7F;
+    --yellow: #FFC93D;
+    --mint: #3DDC97;
+    --sky: #3DAEFF;
+    --purple: #9B5DE5;
+    --shadow-ink: #2E2245;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.35) 2px, transparent 2px);
+    background-size: 34px 34px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 26px 18px 60px; }
+  .display { font-family: 'Fredoka', 'Nunito', sans-serif; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .hidden { display: none !important; }
+
+  .card {
+    background: var(--card);
+    border: 3px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 6px 6px 0 var(--shadow-ink);
+  }
+
+  #onboard-screen { text-align: center; padding-top: 60px; }
+  #onboard-screen .bounce-emoji { font-size: 52px; display: inline-block; animation: bob 1.4s ease-in-out infinite; }
+  #onboard-screen p { margin-top: 16px; }
+
+  .header-row {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .header-label {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--card);
+    text-shadow: 2px 2px 0 var(--shadow-ink);
+    letter-spacing: 0.5px;
+  }
+
+  #lungs-wrap {
+    text-align: center;
+    margin: 6px auto 14px;
+    background: var(--card);
+    border: 3px solid var(--ink);
+    border-radius: 26px;
+    box-shadow: 6px 6px 0 var(--shadow-ink);
+    padding: 14px 0 6px;
+    max-width: 220px;
+  }
+  #lungs-svg { animation: breathe 3.2s ease-in-out infinite; transform-origin: center bottom; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-6deg); }
+    75% { transform: rotate(6deg); }
+  }
+
+  .counter-wrap { text-align: center; margin: 6px 0 20px; }
+  .counter-big {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 84px;
+    line-height: 1;
+    color: var(--card);
+    text-shadow: 3px 3px 0 var(--shadow-ink), -1px -1px 0 var(--shadow-ink);
+    display: inline-block;
+    animation: pop 1s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  .counter-label {
+    font-family: 'Fredoka', sans-serif;
+    color: var(--card);
+    font-size: 15px;
+    text-shadow: 1px 1px 0 var(--shadow-ink);
+  }
+  .counter-sub {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 15px;
+    background: var(--ink);
+    color: var(--yellow);
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  .stats-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .stat-card {
+    flex: 1;
+    text-align: center;
+    padding: 14px 6px 12px;
+    transform: rotate(-2deg);
+  }
+  .stat-card:nth-child(2) { transform: rotate(1.5deg); }
+  .stat-card:nth-child(3) { transform: rotate(-1deg); }
+  .stat-card .stat-emoji { font-size: 22px; }
+  .stat-num {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    margin: 4px 0 2px;
+  }
+  .stat-label { font-size: 10.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-cigs { border-color: var(--pink); }
+  .stat-money { border-color: var(--yellow); }
+  .stat-cravings { border-color: var(--sky); }
+
+  .sos-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    padding: 18px 12px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 22px;
+    cursor: pointer;
+    box-shadow: 5px 5px 0 var(--shadow-ink);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .sos-btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--shadow-ink); }
+  .sos-btn:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--shadow-ink); }
+
+  .section-title-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
+  .section-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--card);
+    text-shadow: 1.5px 1.5px 0 var(--shadow-ink);
+  }
+  .section { margin-bottom: 22px; }
+
+  .badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+  .badge {
+    padding: 10px 10px 8px;
+    text-align: center;
+    min-width: 72px;
+    transition: opacity 0.6s ease, transform 0.2s ease;
+    cursor: default;
+  }
+  .badge:hover { transform: scale(1.08) rotate(-4deg); }
+  .badge.unlocked { animation: badge-pop 0.5s ease; }
+  @keyframes badge-pop {
+    0% { transform: scale(0.3) rotate(-15deg); }
+    60% { transform: scale(1.15) rotate(6deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  .badge-emoji { font-size: 24px; }
+  .badge-label { font-size: 9px; color: var(--muted); margin-top: 4px; line-height: 1.2; font-weight: 700; }
+  .next-badge-text {
+    text-align: center;
+    background: var(--card);
+    border: 2px dashed var(--purple);
+    border-radius: 14px;
+    padding: 8px 12px;
+    color: var(--purple);
+    font-weight: 700;
+    font-size: 12.5px;
+  }
+
+  .timeline { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; }
+  .timeline-row { display: flex; align-items: flex-start; gap: 10px; }
+  .timeline-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2.5px solid var(--ink);
+    margin-top: 2px; flex-shrink: 0;
+    transition: background 0.8s ease;
+  }
+  .timeline-text { font-size: 13.5px; line-height: 1.4; font-weight: 700; transition: opacity 0.8s ease; }
+
+  .quip-card {
+    position: relative;
+    padding: 16px 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 20px;
+    transition: opacity 0.4s ease;
+    transform: rotate(-1deg);
+  }
+  .quip-card::after {
+    content: "";
+    position: absolute;
+    bottom: -14px; left: 40px;
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 14px solid var(--ink);
+  }
+  .quip-card::before {
+    content: "";
+    position: absolute;
+    bottom: -10px; left: 42px;
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 12px solid var(--card);
+    z-index: 1;
+  }
+
+  .funfact-card {
+    background: var(--yellow);
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 5px 5px 0 var(--shadow-ink);
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-top: 6px;
+    transition: opacity 0.4s ease;
+    transform: rotate(1deg);
+  }
+
+  .confetti-piece {
+    position: fixed;
+    top: -30px;
+    font-size: 24px;
+    pointer-events: none;
+    z-index: 100;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(360deg); opacity: 0.9; }
+  }
+  .celebration-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--mint);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 101;
+    box-shadow: 4px 4px 0 var(--shadow-ink);
+    animation: toast-in-out 3.5s ease forwards;
+    white-space: nowrap;
+  }
+  @keyframes toast-in-out {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.8); }
+    12% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+    20% { transform: translateX(-50%) translateY(0) scale(1); }
+    85% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.9); }
+  }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(46,34,69,0.85); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal-card {
+    position: relative;
+    background: var(--card);
+    border: 3px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 7px 7px 0 var(--shadow-ink);
+    padding: 34px 24px;
+    text-align: center;
+    width: 85%;
+    max-width: 340px;
+  }
+  .close-btn {
+    position: absolute; top: 12px; right: 14px;
+    background: var(--pink); color: #fff;
+    border: 2px solid var(--ink); border-radius: 50%;
+    width: 30px; height: 30px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .breath-circle-wrap { position: relative; width: 170px; height: 170px; margin: 22px auto; display: flex; align-items: center; justify-content: center; }
+  .breath-circle {
+    position: absolute; width: 100px; height: 100px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), var(--sky));
+    border: 3px solid var(--ink);
+    transition: transform 4s ease-in-out;
+  }
+  .breath-text { position: relative; font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); z-index: 2; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Loading screen while quitdate.txt is fetched -->
+  <div id="onboard-screen">
+    <div class="bounce-emoji">🫁</div>
+    <p class="muted display">Loading your quit data…</p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard-screen" class="hidden">
+    <div class="header-row">
+      <span class="header-label">🌬️ SMOKE-FREE SQUAD 🌬️</span>
+    </div>
+
+    <div id="lungs-wrap">
+      <svg id="lungs-svg" width="150" height="130" viewBox="0 0 150 130">
+        <path d="M75 12 L75 47" stroke="#2E2245" stroke-width="4" stroke-linecap="round"/>
+        <path id="lung-left" d="M75 47 C 45 42, 18 57, 18 87 C 18 107, 38 114, 48 102 C 55 92, 53 62, 65 52 Z" fill="#5B5550" stroke="#2E2245" stroke-width="3" style="transition: fill 1.2s ease;"/>
+        <path id="lung-right" d="M75 47 C 105 42, 132 57, 132 87 C 132 107, 112 114, 102 102 C 95 92, 97 62, 85 52 Z" fill="#5B5550" stroke="#2E2245" stroke-width="3" style="transition: fill 1.2s ease;"/>
+        <!-- cute mascot face -->
+        <circle cx="52" cy="78" r="4" fill="#2E2245"/>
+        <circle cx="98" cy="78" r="4" fill="#2E2245"/>
+        <circle cx="53.5" cy="76.5" r="1.3" fill="#fff"/>
+        <circle cx="99.5" cy="76.5" r="1.3" fill="#fff"/>
+        <circle cx="42" cy="90" r="6" fill="#FF6FA5" opacity="0.55"/>
+        <circle cx="108" cy="90" r="6" fill="#FF6FA5" opacity="0.55"/>
+        <path d="M62 92 Q75 100 88 92" stroke="#2E2245" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="counter-wrap">
+      <div class="counter-big display" id="days-count">0</div>
+      <div class="counter-label display">days smoke-free 🎊</div>
+      <div><span class="counter-sub" id="time-sub">00:00:00</span></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card card stat-cigs"><div class="stat-emoji">🔥</div><div class="stat-num" id="stat-cigs">0</div><div class="stat-label">not smoked</div></div>
+      <div class="stat-card card stat-money"><div class="stat-emoji">🤑</div><div class="stat-num" id="stat-money">₹0</div><div class="stat-label">saved</div></div>
+      <div class="stat-card card stat-cravings"><div class="stat-emoji">🦾</div><div class="stat-num" id="stat-cravings">0</div><div class="stat-label">cravings beaten</div></div>
+    </div>
+
+    <button class="sos-btn" id="sos-btn">😤 Craving hitting now? Breathe with me!</button>
+
+    <div class="quip-card card" id="quip-card">🫁 Loading a fresh dose of amusement…</div>
+
+    <div class="section">
+      <div class="section-title-row"><span>🏆</span><span class="section-title display">Badge Bonanza</span></div>
+      <div class="badge-row" id="badge-row"></div>
+      <p class="next-badge-text display" id="next-badge-text"></p>
+    </div>
+
+    <div class="section">
+      <div class="section-title-row"><span>✨</span><span class="section-title display">Your Body's Glow-Up</span></div>
+      <div class="timeline card" id="timeline-list"></div>
+    </div>
+
+    <div class="funfact-card" id="funfact-card"></div>
+  </div>
+</div>
+
+<!-- Breathing modal -->
+<div id="breathing-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <button class="close-btn" id="breathing-close">✕</button>
+    <p class="muted">The craving will pass in a few minutes. Ride it out. 🌊</p>
+    <div class="breath-circle-wrap">
+      <div class="breath-circle" id="breath-circle"></div>
+      <span class="breath-text" id="breath-text">Breathe in</span>
+    </div>
+    <p class="muted" id="breath-timer" style="margin-top:18px;">45s left</p>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'quit-smoking-data-v1';
+// Fallbacks used only if quitdate.txt can't be read (e.g. opened as a local file:// page)
+const FALLBACK_QUIT_AT = new Date(2026, 6, 6, 8, 14, 18).getTime();
+const FALLBACK_CIGS_PER_DAY = 5;
+const FALLBACK_COST_PER_CIG = 25;
+let QUIT_AT = FALLBACK_QUIT_AT;
+let CIGS_PER_DAY = FALLBACK_CIGS_PER_DAY;
+let COST_PER_CIG = FALLBACK_COST_PER_CIG;
+
+async function loadQuitDateFromFile() {
+  try {
+    const res = await fetch('quitdate.txt', { cache: 'no-store' });
+    if (!res.ok) throw new Error('file not found');
+    const lines = (await res.text()).trim().split('\n').map(l => l.trim());
+    const parsedDate = new Date(lines[0]).getTime();
+    if (!isNaN(parsedDate)) QUIT_AT = parsedDate;
+    if (lines[1] !== undefined && !isNaN(Number(lines[1]))) CIGS_PER_DAY = Number(lines[1]);
+    if (lines[2] !== undefined && !isNaN(Number(lines[2]))) COST_PER_CIG = Number(lines[2]);
+  } catch (e) {
+    console.warn('Could not read quitdate.txt, using fallback values.', e);
+  }
+}
+
+const BADGES = [
+  { days: 0, label: "Day One", emoji: "🌱" },
+  { days: 1, label: "24 Hours", emoji: "🌙" },
+  { days: 3, label: "3 Days Clean", emoji: "💪" },
+  { days: 7, label: "One Week", emoji: "🔥" },
+  { days: 14, label: "Two Weeks", emoji: "🫁" },
+  { days: 30, label: "One Month", emoji: "🌸" },
+  { days: 90, label: "90 Days", emoji: "🌳" },
+  { days: 180, label: "Half a Year", emoji: "🦁" },
+  { days: 365, label: "One Year", emoji: "🏆" },
+];
+
+const TIMELINE = [
+  { hours: 0.33, label: "Heart rate and blood pressure start dropping" },
+  { hours: 12, label: "Carbon monoxide in your blood returns to normal" },
+  { hours: 24, label: "Heart attack risk begins to decrease" },
+  { hours: 48, label: "Nerve endings regrow — smell and taste sharpen" },
+  { hours: 72, label: "Breathing feels easier, energy starts rising" },
+  { hours: 24 * 14, label: "Circulation and lung function noticeably improve" },
+  { hours: 24 * 30 * 3, label: "Coughing and shortness of breath fade" },
+  { hours: 24 * 365, label: "Heart disease risk is half that of a smoker" },
+];
+
+const QUIPS = [
+  "Somewhere, a lighter is filing for unemployment.",
+  "Your lungs just did a tiny, dramatic happy dance.",
+  "A cigarette tried to text you. It got left on read.",
+  "Fun fact: ashtrays are extremely bored right now.",
+  "Your future self just gave you a quiet high-five.",
+  "You are currently 100% less smoke, 100% more legend.",
+  "Somewhere a pack of cigarettes is gathering dust and feelings.",
+  "Your circulatory system sent a thank-you card. It's in the mail.",
+  "Breaking news: local lungs report unexpected joy.",
+  "You've out-stubborn-ed a nicotine molecule today. Respect.",
+  "Your wallet just felt a small, pleasant tremor.",
+  "This is the part of the movie where the hero looks cool in slow motion. That's you.",
+  "Somewhere, a tar deposit is being quietly evicted.",
+  "Your smoke detector has never been less interested in you.",
+  "Even your coffee tastes a little more like coffee now.",
+];
+
+let quipIndex = Math.floor(Math.random() * QUIPS.length);
+let quipInterval = null;
+
+function showNextQuip() {
+  const el = document.getElementById('quip-card');
+  el.style.opacity = 0;
+  setTimeout(() => {
+    quipIndex = (quipIndex + 1) % QUIPS.length;
+    el.textContent = '💬 ' + QUIPS[quipIndex];
+    el.style.opacity = 1;
+  }, 400);
+}
+
+function funFacts(days, hours, mins, elapsedHours, cigsAvoided, moneySaved) {
+  const chaiCount = Math.floor(moneySaved / 15);
+  const parottaCount = Math.floor(moneySaved / 20);
+  const movieMinutes = Math.floor(elapsedHours * 60 / 148); // ~148 min avg movie
+  const breathsSaved = Math.floor(cigsAvoided * 12); // rough breaths per cigarette break lost to smoke
+  const facts = [
+    `₹${moneySaved} saved so far — that's about ${chaiCount} cups of chai you could've had instead. ☕`,
+    `${cigsAvoided} cigarettes avoided — roughly ${breathsSaved} fewer smoke-filled breaths for those lungs of yours. 🫁`,
+    moneySaved >= 20 ? `You could've bought ${parottaCount} parottas with what you've saved. Priorities, honestly. 🫓` : `Give it a few more hours and the parotta math starts getting interesting. 🫓`,
+    movieMinutes >= 1 ? `You've been smoke-free for roughly ${movieMinutes} movie-length sitting${movieMinutes === 1 ? '' : 's'} worth of time. 🎬` : `You've been smoke-free for ${Math.floor(elapsedHours*60)} minutes — a solid chai-break's worth already. ☕`,
+    `At this pace, in a year you'll have skipped roughly ${Math.floor(cigsAvoided * 365 / Math.max(days,1))} cigarettes annually. Future you says thanks. 🙌`,
+  ];
+  return facts[Math.floor(Math.random() * facts.length)];
+}
+
+let seenBadges = [];
+try {
+  const storedSeen = localStorage.getItem('quit-seen-badges');
+  if (storedSeen) seenBadges = JSON.parse(storedSeen);
+} catch (e) {}
+
+function celebrate(badgeLabel, emoji) {
+  const toast = document.createElement('div');
+  toast.className = 'celebration-toast';
+  toast.textContent = `${emoji} Unlocked: ${badgeLabel}!`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3600);
+
+  const pieces = ['🎉', '🫁', '🌟', '💪', '🎊', emoji];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+    p.style.fontSize = (16 + Math.random() * 14) + 'px';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 4000);
+  }
+}
+
+function checkBadgeCelebration(days) {
+  const hit = BADGES.find(b => b.days === days);
+  if (hit && !seenBadges.includes(hit.days)) {
+    seenBadges.push(hit.days);
+    try { localStorage.setItem('quit-seen-badges', JSON.stringify(seenBadges)); } catch (e) {}
+    celebrate(hit.label, hit.emoji);
+  }
+}
+
+let accountData = null;
+let tickInterval = null;
+let breathPhaseInterval = null;
+let breathTickInterval = null;
+
+function lungColor(days) {
+  const t = Math.min(days / 90, 1);
+  const from = [91, 85, 80];
+  const to = [255, 138, 168]; // playful healthy pink
+  const c = from.map((v, i) => Math.round(v + (to[i] - v) * t));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  return { days, hours, mins, secs };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(accountData));
+  } catch (e) { console.error('save failed', e); }
+}
+
+function enterDashboard() {
+  document.getElementById('onboard-screen').classList.add('hidden');
+  document.getElementById('dashboard-screen').classList.remove('hidden');
+  document.getElementById('quip-card').textContent = '💬 ' + QUIPS[quipIndex];
+  tick();
+  if (tickInterval) clearInterval(tickInterval);
+  tickInterval = setInterval(tick, 1000);
+  if (quipInterval) clearInterval(quipInterval);
+  quipInterval = setInterval(showNextQuip, 15000);
+}
+
+let lastFunFactUpdate = 0;
+let lastRenderedDays = -1;
+
+function tick() {
+  const now = Date.now();
+  const elapsedMs = Math.max(0, now - accountData.quitAt);
+  const { days, hours, mins, secs } = formatDuration(elapsedMs);
+  const elapsedHours = elapsedMs / 3600000;
+  const cigsAvoided = Math.floor((elapsedHours / 24) * accountData.cigsPerDay);
+  const moneySaved = Math.round(cigsAvoided * accountData.costPerCig);
+
+  const daysEl = document.getElementById('days-count');
+  daysEl.textContent = days;
+  if (days !== lastRenderedDays) {
+    daysEl.style.animation = 'none';
+    void daysEl.offsetWidth;
+    daysEl.style.animation = 'pop 0.6s ease';
+    lastRenderedDays = days;
+  }
+
+  document.getElementById('time-sub').textContent =
+    `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  document.getElementById('stat-cigs').textContent = cigsAvoided;
+  document.getElementById('stat-money').textContent = '₹' + moneySaved.toLocaleString('en-IN');
+  document.getElementById('stat-cravings').textContent = accountData.cravings.length;
+
+  const color = lungColor(days);
+  document.getElementById('lung-left').setAttribute('fill', color);
+  document.getElementById('lung-right').setAttribute('fill', color);
+
+  renderBadges(days);
+  renderTimeline(elapsedHours);
+  checkBadgeCelebration(days);
+
+  if (now - lastFunFactUpdate > 10000) {
+    lastFunFactUpdate = now;
+    const factEl = document.getElementById('funfact-card');
+    factEl.style.opacity = 0;
+    setTimeout(() => {
+      factEl.textContent = '✨ ' + funFacts(days, hours, mins, elapsedHours, cigsAvoided, moneySaved);
+      factEl.style.opacity = 1;
+    }, 300);
+  }
+}
+
+function renderBadges(days) {
+  days = days || 0;
+  const row = document.getElementById('badge-row');
+  row.innerHTML = '';
+  const badgeBg = ['#FFE1EC', '#FFF3C4', '#D6F5E3', '#DCEBFF', '#EAD9FF'];
+  BADGES.forEach((b, i) => {
+    const unlocked = b.days <= days;
+    const el = document.createElement('div');
+    el.className = 'badge card' + (unlocked ? ' unlocked' : '');
+    el.style.background = unlocked ? badgeBg[i % badgeBg.length] : '#e8e6ee';
+    el.style.opacity = unlocked ? '1' : '0.35';
+    el.style.filter = unlocked ? 'none' : 'grayscale(1)';
+    el.title = b.label;
+    el.innerHTML = `<div class="badge-emoji">${b.emoji}</div><div class="badge-label">${b.label}</div>`;
+    row.appendChild(el);
+  });
+  const next = BADGES.find(b => b.days > days);
+  document.getElementById('next-badge-text').textContent = next
+    ? `🚀 ${next.days - days} day${next.days - days === 1 ? '' : 's'} to "${next.label}" ${next.emoji}`
+    : '🎉 All badges unlocked — absolute legend status! 🎉';
+}
+
+function renderTimeline(elapsedHours) {
+  elapsedHours = elapsedHours || 0;
+  const list = document.getElementById('timeline-list');
+  list.innerHTML = '';
+  TIMELINE.forEach(m => {
+    const done = elapsedHours >= m.hours;
+    const row = document.createElement('div');
+    row.className = 'timeline-row';
+    row.innerHTML = `
+      <div class="timeline-dot" style="background:${done ? 'var(--mint)' : '#e8e6ee'}; border-color:${done ? 'var(--ink)' : 'var(--muted)'};"></div>
+      <span class="timeline-text" style="opacity:${done ? 1 : 0.45};">${done ? '✅ ' : ''}${m.label}</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('sos-btn').onclick = () => {
+  document.getElementById('breathing-modal').classList.remove('hidden');
+  startBreathing();
+};
+
+document.getElementById('breathing-close').onclick = () => stopBreathing(false);
+
+function startBreathing() {
+  let seconds = 45;
+  let phaseIdx = 0;
+  const phases = ['in', 'hold', 'out'];
+  const circle = document.getElementById('breath-circle');
+  const text = document.getElementById('breath-text');
+  const timerEl = document.getElementById('breath-timer');
+
+  function applyPhase() {
+    const phase = phases[phaseIdx];
+    if (phase === 'in') { circle.style.transform = 'scale(1.4)'; text.textContent = 'Breathe in'; }
+    else if (phase === 'hold') { circle.style.transform = 'scale(1.4)'; text.textContent = 'Hold'; }
+    else { circle.style.transform = 'scale(0.85)'; text.textContent = 'Breathe out'; }
+  }
+  applyPhase();
+
+  breathPhaseInterval = setInterval(() => {
+    phaseIdx = (phaseIdx + 1) % 3;
+    applyPhase();
+  }, 4000);
+
+  breathTickInterval = setInterval(() => {
+    seconds -= 1;
+    timerEl.textContent = seconds + 's left';
+    if (seconds <= 0) stopBreathing(true);
+  }, 1000);
+}
+
+function stopBreathing(completed) {
+  clearInterval(breathPhaseInterval);
+  clearInterval(breathTickInterval);
+  document.getElementById('breathing-modal').classList.add('hidden');
+  if (completed) {
+    accountData.cravings.push(Date.now());
+    saveData();
+    tick();
+  }
+}
+
+// Init: load quit date, cigs/day, and cost from file; keep only craving history in localStorage
+(async () => {
+  await loadQuitDateFromFile();
+  const saved = loadData();
+  accountData = {
+    quitAt: QUIT_AT,
+    cigsPerDay: CIGS_PER_DAY,
+    costPerCig: COST_PER_CIG,
+    cravings: (saved && Array.isArray(saved.cravings)) ? saved.cravings : [],
+  };
+  enterDashboard();
+})();
+</script>
+</body>
+</html>
